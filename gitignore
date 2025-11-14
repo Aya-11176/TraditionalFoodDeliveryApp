@@ -1,0 +1,11 @@
+ # Eclipse
+ .classpath
+ .project
+ .settings/
+ bin/
+ target/
+ *.log
+# Mac.DS_Store
+# IDE / OS files
+*.class
+*.tmp
