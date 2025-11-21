@@ -2,11 +2,11 @@ package com.tradifooddelivery.view;
 
 import javax.swing.*;
 import java.awt.*;
-
+import com.tradifooddelivery.controller.CartController;
 public class MainWindow extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
-
+    private CartController cartController = new CartController();
     public MainWindow() {
         setTitle("H&S Restaurant");
         setSize(1200, 700);
@@ -39,7 +39,9 @@ public class MainWindow extends JFrame {
     public void showPanel(String name) {
         cardLayout.show(mainPanel, name);
     }
-
+  public CartController getCartController() {
+    return cartController;
+}
     public static void main(String[] args) {
         SwingUtilities.invokeLater(MainWindow::new);
     }
