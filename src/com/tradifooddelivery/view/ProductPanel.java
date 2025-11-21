@@ -15,5 +15,10 @@ public class ProductPanel extends JPanel {
         JLabel lbl = new JLabel("Menu Page — Coming Soon!", SwingConstants.CENTER);
         lbl.setFont(new Font("SansSerif", Font.BOLD, 20));
         add(lbl, BorderLayout.CENTER);
+        addToCartBtn.addActionListener(e -> {
+    parent.getCartController().addToCart(product);
+    JOptionPane.showMessageDialog(parent, product.getName() + " added to cart.");
+});
+    add(addToCartBtn, BorderLayout.SOUTH);
     }
 }
