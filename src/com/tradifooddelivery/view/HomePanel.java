@@ -252,4 +252,3 @@ public class HomePanel extends JPanel {
         }
     }
 }
-

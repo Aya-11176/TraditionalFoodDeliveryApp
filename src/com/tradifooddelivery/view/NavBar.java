@@ -6,44 +6,65 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class NavBar extends JPanel {
-    private static final Color ORANGE = new Color(255, 102, 0);
     private final MainWindow parent;
+    private boolean transparentMode;
 
-    public NavBar(MainWindow parent, boolean whiteBackground) {
+    private final JLabel titleLabel;
+    private final JPanel rightPanel;
+    private final JLabel cartIcon;
+
+    private static final Color ORANGE = new Color(235, 91, 0);
+    private static final Color DARK_BLUE = new Color(20, 61, 96);
+
+    public NavBar(MainWindow parent, boolean startTransparent) {
         this.parent = parent;
+        this.transparentMode = startTransparent;
 
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(12, 28, 12, 28));
-        setBackground(whiteBackground ? Color.WHITE : new Color(0, 0, 0, 0)); // transparent if false
+        setBorder(BorderFactory.createEmptyBorder(10, 28, 10, 28));
+        setOpaque(true);
 
         // LEFT: logo + name
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         left.setOpaque(false);
-        CircleLabel circle = new CircleLabel("H&S");
-        circle.setPreferredSize(new Dimension(48, 48));
-        JLabel name = new JLabel("H&S Restaurant");
-        name.setFont(new Font("Serif", Font.BOLD, 18));
-        name.setForeground(whiteBackground ? Color.BLACK : Color.WHITE);
+
+        JLabel circle = new JLabel("H&S", SwingConstants.CENTER) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(ORANGE);
+                g2.fillOval(0, 0, getWidth(), getHeight());
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("SansSerif", Font.BOLD, 14));
+                FontMetrics fm = g2.getFontMetrics();
+                String txt = "H&S";
+                int x = (getWidth() - fm.stringWidth(txt)) / 2;
+                int y = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                g2.drawString(txt, x, y);
+                g2.dispose();
+            }
+        };
+        circle.setPreferredSize(new Dimension(42, 42));
         left.add(circle);
-        left.add(name);
+
+        titleLabel = new JLabel("H&S Restaurant");
+        titleLabel.setFont(new Font("Serif", Font.BOLD, 18));
+        left.add(titleLabel);
 
         // RIGHT: menu items
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 24, 0));
-        right.setOpaque(false);
+        rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 26, 0));
+        rightPanel.setOpaque(false);
 
-        String[] items = {"Home", "Menu", "Contact"};
-        for (String s : items) {
-            JLabel lbl = new JLabel(s);
-            lbl.setFont(new Font("SansSerif", Font.PLAIN, 14));
-            lbl.setForeground(whiteBackground ? Color.BLACK : Color.WHITE);
-            lbl.addMouseListener(new HoverLabel(lbl, s, whiteBackground));
-            right.add(lbl);
-        }
+        addNavItem("Home", "home");
+        addNavItem("Menu", "menu");
+        addNavItem("Contact", "contact");
 
-        JLabel cart = new JLabel("\uD83D\uDED2");
-        cart.setFont(new Font("SansSerif", Font.PLAIN, 18));
-        cart.setForeground(whiteBackground ? Color.BLACK : Color.WHITE);
-        cart.addMouseListener(new MouseAdapter() {
+        cartIcon = new JLabel("\uD83D\uDED2");
+        cartIcon.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        cartIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        cartIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 parent.showPanel("cart");
@@ -51,87 +72,76 @@ public class NavBar extends JPanel {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                cart.setForeground(ORANGE);
-                cart.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                cartIcon.setForeground(ORANGE);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                cart.setForeground(whiteBackground ? Color.BLACK : Color.WHITE);
-                cart.setCursor(Cursor.getDefaultCursor());
+                cartIcon.setForeground(transparentMode ? Color.WHITE : DARK_BLUE);
             }
         });
-        right.add(cart);
+
+        rightPanel.add(cartIcon);
 
         add(left, BorderLayout.WEST);
-        add(right, BorderLayout.EAST);
+        add(rightPanel, BorderLayout.EAST);
+
+        applyMode();
     }
 
-    // inner hover class
-    private class HoverLabel extends MouseAdapter {
-        private final JLabel label;
-        private final String name;
-        private final boolean whiteBg;
+    private void addNavItem(String text, String panel) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        HoverLabel(JLabel label, String name, boolean whiteBg) {
-            this.label = label;
-            this.name = name;
-            this.whiteBg = whiteBg;
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            label.setForeground(ORANGE);
-            label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            label.setForeground(whiteBg ? Color.BLACK : Color.WHITE);
-            label.setCursor(Cursor.getDefaultCursor());
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            switch (name) {
-                case "Home" -> parent.showPanel("home");
-                case "Menu" -> parent.showPanel("menu");
-                case "Contact" -> parent.showPanel("contact");
+        lbl.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                lbl.setForeground(ORANGE);
             }
-        }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                lbl.setForeground(transparentMode ? Color.WHITE : DARK_BLUE);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                parent.showPanel(panel);
+            }
+        });
+
+        rightPanel.add(lbl);
     }
 
-    // circle logo
-    private static class CircleLabel extends JLabel {
-        CircleLabel(String text) {
-            super(text, SwingConstants.CENTER);
-            setForeground(Color.WHITE);
-            setFont(new Font("SansSerif", Font.BOLD, 16));
-            setOpaque(false);
-        }
+    public void setTransparent(boolean transparent) {
+        this.transparentMode = transparent;
+        applyMode();
+    }
 
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            int w = getWidth();
-            int h = getHeight();
-            int size = Math.min(w, h);
-            int x = (w - size) / 2;
-            int y = (h - size) / 2;
-            g2.setColor(new Color(255, 102, 0));
-            g2.fillOval(x, y, size, size);
-            g2.setColor(new Color(255, 255, 255, 40));
-            g2.drawOval(x, y, size - 1, size - 1);
-            g2.dispose();
-            super.paintComponent(g);
+    private void applyMode() {
+        if (transparentMode) {
+            setBackground(new Color(0, 0, 0, 0));
+            titleLabel.setForeground(Color.WHITE);
+            cartIcon.setForeground(Color.WHITE);
+            for (Component c : rightPanel.getComponents()) {
+                c.setForeground(Color.WHITE);
+            }
+            setBorder(BorderFactory.createEmptyBorder(10, 28, 10, 28));
+        } else {
+            setBackground(Color.WHITE);
+            titleLabel.setForeground(DARK_BLUE);
+            cartIcon.setForeground(DARK_BLUE);
+            for (Component c : rightPanel.getComponents()) {
+                c.setForeground(DARK_BLUE);
+            }
+            // subtle bottom border to mimic site separation
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0,0,1,0,new Color(230,230,230)),
+                    BorderFactory.createEmptyBorder(10,28,10,28)
+            ));
         }
-
-        @Override
-        public Dimension getPreferredSize() {
-            Dimension d = super.getPreferredSize();
-            int s = Math.max(d.width, d.height);
-            return new Dimension(s + 14, s + 14);
-        }
+        repaint();
     }
 }
+
